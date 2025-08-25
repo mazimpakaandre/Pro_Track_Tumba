@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - ProTrack-RPT{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('admin_dashboard') }}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin_inventory') }}">
+                            <i class="bi bi-boxes"></i> Inventory
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin_orders') }}">
+                            <i class="bi bi-list-check"></i> Orders
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin_audit_logs') }}">
+                            <i class="bi bi-journal-text"></i> Audit Logs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin_export_orders') }}">
+                            <i class="bi bi-download"></i> Export Orders
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin_export_inventory') }}">
+                            <i class="bi bi-file-earmark-excel"></i> Export Inventory
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+            <!-- Header -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="bi bi-speedometer2 text-primary"></i> 
+                        Admin Dashboard
+                    </h1>
+                    <p class="text-muted mb-0">Welcome back, {{ session.admin_username }}!</p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="{{ url_for('admin_inventory') }}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-boxes"></i> Manage Inventory
+                        </a>
+                        <a href="{{ url_for('admin_orders') }}" class="btn btn-sm btn-outline-success">
+                            <i class="bi bi-list-check"></i> View Orders
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-primary shadow h-100 py-2 stats-card">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Total Items
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_items }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-box-seam stats-icon text-primary"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-success shadow h-100 py-2 stats-card">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Total Orders
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_orders }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-list-check stats-icon text-success"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-warning shadow h-100 py-2 stats-card">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        Pending Orders
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pending_orders }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-clock stats-icon text-warning"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-danger shadow h-100 py-2 stats-card">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                        Low Stock Items
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ low_stock }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-exclamation-triangle stats-icon text-danger"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Orders -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-primary">
+                                <i class="bi bi-clock-history"></i> Recent Orders
+                            </h6>
+                            <a href="{{ url_for('admin_orders') }}" class="btn btn-sm btn-primary">
+                                View All Orders
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            {% if recent_orders %}
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" width="100%" cellspacing="0">
+                                        <thead>
+                                            <tr>
+                                                <th>Order ID</th>
+                                                <th>User</th>
+                                                <th>Department</th>
+                                                <th>Items</th>
+                                                <th>Date Needed</th>
+                                                <th>Status</th>
+                                                <th>Created</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for order in recent_orders %}
+                                                <tr>
+                                                    <td>
+                                                        <strong>#{{ order.id }}</strong>
+                                                    </td>
+                                                    <td>{{ order.user_name }}</td>
+                                                    <td>
+                                                        <span class="badge bg-secondary">{{ order.department }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-info">{{ order.item_count }} items</span>
+                                                    </td>
+                                                    <td>{{ order.date_needed.strftime('%Y-%m-%d') }}</td>
+                                                    <td>
+                                                        {% if order.status == 'Pending' %}
+                                                            <span class="badge bg-warning status-pending">Pending</span>
+                                                        {% elif order.status == 'Approved' %}
+                                                            <span class="badge bg-success status-approved">Approved</span>
+                                                        {% elif order.status == 'Rejected' %}
+                                                            <span class="badge bg-danger status-rejected">Rejected</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                                    <td>
+                                                        <a href="{{ url_for('admin_order_detail', id=order.id) }}" 
+                                                           class="btn btn-sm btn-outline-primary">
+                                                            <i class="bi bi-eye"></i> View
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                                    <h5 class="mt-3 text-muted">No orders yet</h5>
+                                    <p class="text-muted">Orders will appear here once users start placing them.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">
+                                <i class="bi bi-lightning"></i> Quick Actions
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <a href="{{ url_for('admin_add_consumable') }}" class="btn btn-success w-100">
+                                        <i class="bi bi-plus-circle"></i><br>
+                                        Add New Item
+                                    </a>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <a href="{{ url_for('admin_orders') }}?status=Pending" class="btn btn-warning w-100">
+                                        <i class="bi bi-clock"></i><br>
+                                        Review Pending
+                                    </a>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <a href="{{ url_for('admin_export_inventory') }}" class="btn btn-info w-100">
+                                        <i class="bi bi-download"></i><br>
+                                        Export Inventory
+                                    </a>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <a href="{{ url_for('admin_audit_logs') }}" class="btn btn-secondary w-100">
+                                        <i class="bi bi-journal-text"></i><br>
+                                        View Logs
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-refresh dashboard every 30 seconds
+    setInterval(function() {
+        location.reload();
+    }, 30000);
+    
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Add click animation to stats cards
+    document.querySelectorAll('.stats-card').forEach(card => {
+        card.addEventListener('click', function() {
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 150);
+        });
+    });
+</script>
+{% endblock %} 

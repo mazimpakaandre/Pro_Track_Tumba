@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+
+{% block title %}Place Order - ProTrack-RPT{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-1">
+                        <i class="bi bi-check-circle text-success"></i> 
+                        Place Order
+                    </h1>
+                    <p class="text-muted mb-0">Complete your order by providing the required information</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('cart') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left"></i> Back to Cart
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Order Form -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-lines-fill"></i> Order Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('place_order') }}" id="orderForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="user_name" class="form-label">
+                                    <i class="bi bi-person"></i> Full Name <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="user_name" name="user_name" 
+                                       required placeholder="Enter your full name">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="department" class="form-label">
+                                    <i class="bi bi-building"></i> Department <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="department" name="department" required>
+                                    <option value="">Select Department</option>
+                                    <option value="IT Department">IT Department</option>
+                                    <option value="HR Department">HR Department</option>
+                                    <option value="Marketing">Marketing</option>
+                                    <option value="Finance">Finance</option>
+                                    <option value="Sales">Sales</option>
+                                    <option value="Operations">Operations</option>
+                                    <option value="Research & Development">Research & Development</option>
+                                    <option value="Customer Service">Customer Service</option>
+                                    <option value="Legal">Legal</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label for="purpose" class="form-label">
+                                    <i class="bi bi-chat-text"></i> Purpose/Reason <span class="text-danger">*</span>
+                                </label>
+                                <textarea class="form-control" id="purpose" name="purpose" rows="4" 
+                                          required placeholder="Please describe the purpose of this order..."></textarea>
+                                <div class="form-text">
+                                    Provide a detailed explanation of why you need these items.
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="date_needed" class="form-label">
+                                    <i class="bi bi-calendar-event"></i> Date Needed <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" class="form-control" id="date_needed" name="date_needed" 
+                                       required min="{{ today }}">
+                                <div class="form-text">
+                                    When do you need these items by?
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="priority" class="form-label">
+                                    <i class="bi bi-flag"></i> Priority Level
+                                </label>
+                                <select class="form-select" id="priority" name="priority">
+                                    <option value="normal">Normal</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                                <div class="form-text">
+                                    How urgent is this request?
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('cart') }}" class="btn btn-outline-secondary me-md-2">
+                                <i class="bi bi-arrow-left"></i> Back to Cart
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Place Order
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-check"></i> Order Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6>Items in Cart:</h6>
+                        <div class="list-group list-group-flush">
+                            {% for item in cart_items %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                    <div>
+                                        <strong>{{ item.name }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ item.category }}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-primary">{{ item.cart_quantity }}</span>
+                                        <br>
+                                        <small class="text-muted">Stock: {{ item.quantity }}</small>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Total Items:</span>
+                        <strong>{{ total }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Unique Items:</span>
+                        <strong>{{ cart_items|length }}</strong>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Note:</strong> Your order will be reviewed by an administrator before approval.
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Important:</strong> Please ensure all information is accurate before submitting.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Order Confirmation Modal -->
+<div class="modal fade" id="orderConfirmationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-check-circle"></i> Order Confirmation
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <i class="bi bi-check-circle text-success" style="font-size: 4rem;"></i>
+                    <h4 class="mt-3 text-success">Order Submitted Successfully!</h4>
+                    <p class="text-muted">Your order has been received and is pending approval.</p>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Order Details:</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Order ID:</strong> <span id="modalOrderId"></span></li>
+                            <li><strong>Status:</strong> <span class="badge bg-warning">Pending</span></li>
+                            <li><strong>Date Submitted:</strong> <span id="modalDateSubmitted"></span></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Next Steps:</h6>
+                        <ol class="small">
+                            <li>Your order will be reviewed by an administrator</li>
+                            <li>You'll receive notification of approval/rejection</li>
+                            <li>Approved orders will be processed and stock updated</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="{{ url_for('index') }}" class="btn btn-primary">Continue Shopping</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Set minimum date to today
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('date_needed').min = today;
+        
+        // Set default date to tomorrow
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('date_needed').value = tomorrow.toISOString().split('T')[0];
+    });
+    
+    // Form validation
+    document.getElementById('orderForm').addEventListener('submit', function(e) {
+        const user_name = document.getElementById('user_name').value.trim();
+        const department = document.getElementById('department').value;
+        const purpose = document.getElementById('purpose').value.trim();
+        const date_needed = document.getElementById('date_needed').value;
+        
+        if (!user_name || !department || !purpose || !date_needed) {
+            e.preventDefault();
+            alert('Please fill in all required fields.');
+            return false;
+        }
+        
+        if (purpose.length < 10) {
+            e.preventDefault();
+            alert('Please provide a more detailed purpose (at least 10 characters).');
+            return false;
+        }
+        
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
+        submitBtn.disabled = true;
+    });
+    
+    // Department change handler
+    document.getElementById('department').addEventListener('change', function() {
+        if (this.value === 'Other') {
+            const otherInput = document.createElement('input');
+            otherInput.type = 'text';
+            otherInput.className = 'form-control mt-2';
+            otherInput.name = 'department_other';
+            otherInput.placeholder = 'Please specify department';
+            otherInput.required = true;
+            
+            const existingInput = this.parentNode.querySelector('input[name="department_other"]');
+            if (!existingInput) {
+                this.parentNode.appendChild(otherInput);
+            }
+        } else {
+            const otherInput = this.parentNode.querySelector('input[name="department_other"]');
+            if (otherInput) {
+                otherInput.remove();
+            }
+        }
+    });
+    
+    // Character counter for purpose
+    document.getElementById('purpose').addEventListener('input', function() {
+        const remaining = 500 - this.value.length;
+        const counter = this.parentNode.querySelector('.char-counter') || 
+                       document.createElement('small');
+        
+        if (!this.parentNode.querySelector('.char-counter')) {
+            counter.className = 'char-counter form-text text-muted';
+            this.parentNode.appendChild(counter);
+        }
+        
+        counter.textContent = `${remaining} characters remaining`;
+        
+        if (remaining < 0) {
+            counter.className = 'char-counter form-text text-danger';
+        } else if (remaining < 50) {
+            counter.className = 'char-counter form-text text-warning';
+        } else {
+            counter.className = 'char-counter form-text text-muted';
+        }
+    });
+</script>
+{% endblock %} 
