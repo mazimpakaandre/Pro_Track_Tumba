@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Consumable Management - ProTrack-RPT{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+			<div class="position-sticky pt-3">
+				<ul class="nav flex-column">
+					<li class="nav-item"><a class="nav-link" href="{{ url_for('admin_dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+					<li class="nav-item"><a class="nav-link" href="{{ url_for('admin_inventory') }}"><i class="bi bi-boxes"></i> Inventory</a></li>
+					<li class="nav-item"><a class="nav-link active" href="{{ url_for('admin_consumables') }}"><i class="bi bi-clipboard-check"></i> Consumables</a></li>
+				</ul>
+			</div>
+		</div>
+
+		<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+			<div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+				<h1 class="h4 mb-0"><i class="bi bi-clipboard-check text-primary"></i> Consumable Management</h1>
+				<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addConsumableModal"><i class="bi bi-plus-circle"></i> Add Consumable</button>
+			</div>
+
+			<form class="row g-2 mb-3" method="GET" action="{{ url_for('admin_consumables') }}">
+				<div class="col-sm-6 col-md-4">
+					<input type="text" class="form-control" name="search" placeholder="Search by Name or Category" value="{{ search }}">
+				</div>
+				<div class="col-auto">
+					<button type="submit" class="btn btn-outline-secondary"><i class="bi bi-search"></i> Search</button>
+				</div>
+			</form>
+
+			<div class="card shadow">
+				<div class="card-header py-3">
+					<h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-list-ul"></i> Consumables</h6>
+				</div>
+				<div class="card-body">
+					<div class="table-responsive">
+						<table class="table table-bordered table-hover">
+							<thead class="table-light">
+								<tr>
+									<th>Name</th>
+									<th>Available</th>
+									<th>Damaged</th>
+									<th>Borrowed</th>
+									<th>Returnable</th>
+									<th>Actions</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for it in items %}
+								<tr>
+									<td>{{ it.name }}</td>
+									<td>{{ it.quantity }}</td>
+									<td>{{ it.damaged }}</td>
+									<td>{{ it.borrowed }}</td>
+									<td>{% if it.returnable %}<span class="badge bg-success">Returnable</span>{% else %}<span class="badge bg-secondary">Non-Returnable</span>{% endif %}</td>
+									<td>
+										<div class="btn-group" role="group">
+											<button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#borrowModal" data-item='{{ {"id": it.id, "name": it.name, "returnable": it.returnable} | tojson | e }}'><i class="bi bi-box-arrow-up-right"></i> Borrow</button>
+											<button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#updateConsumableModal" data-item='{{ {"id": it.id, "name": it.name, "quantity": it.quantity, "category": it.category, "returnable": it.returnable} | tojson | e }}' {% if it.borrowed|int > 0 %}disabled title="Has records"{% endif %}><i class="bi bi-pencil"></i> Update</button>
+											<form method="POST" action="{{ url_for('admin_consumables_delete', cid=it.id) }}" class="d-inline" onsubmit="return confirm('Delete this consumable?');">
+												<button class="btn btn-sm btn-outline-danger" {% if it.borrowed|int > 0 %}disabled title="Has records"{% endif %}><i class="bi bi-trash"></i> Delete</button>
+											</form>
+											<button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#detailsModal" data-item='{{ it | tojson | e }}'><i class="bi bi-eye"></i> Details</button>
+										</div>
+									</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+
+		</main>
+	</div>
+</div>
+
+<!-- Add Consumable Modal -->
+<div class="modal fade" id="addConsumableModal" tabindex="-1">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header"><h5 class="modal-title"><i class="bi bi-plus-circle text-primary"></i> Add Consumable</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+			<form method="POST" action="{{ url_for('admin_consumables_add') }}">
+				<div class="modal-body">
+					<div class="mb-3"><label class="form-label">Consumable Name</label><input name="name" class="form-control" required></div>
+					<div class="mb-3"><label class="form-label">Quantity</label><input name="quantity" type="number" min="1" class="form-control" required></div>
+					<div class="mb-3"><label class="form-label">Category</label><input name="category" class="form-control" required></div>
+					<div class="form-check"><input class="form-check-input" type="checkbox" id="addReturnable" name="returnable" checked><label class="form-check-label" for="addReturnable">Returnable</label></div>
+				</div>
+				<div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">Save</button></div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- Update Consumable Modal -->
+<div class="modal fade" id="updateConsumableModal" tabindex="-1">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header"><h5 class="modal-title"><i class="bi bi-pencil text-primary"></i> Update Consumable</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+			<form method="POST" id="updateConsumableForm">
+				<div class="modal-body">
+					<div class="mb-3"><label class="form-label">Consumable Name</label><input name="name" id="updName" class="form-control" required></div>
+					<div class="mb-3"><label class="form-label">Stock Quantity</label><input name="quantity" id="updQty" type="number" min="0" class="form-control" required></div>
+					<div class="mb-3"><label class="form-label">Category</label><input name="category" id="updCat" class="form-control" required></div>
+					<div class="form-check"><input class="form-check-input" type="checkbox" id="updReturnable" name="returnable"><label class="form-check-label" for="updReturnable">Returnable</label></div>
+				</div>
+				<div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">Update</button></div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- Borrow Modal -->
+<div class="modal fade" id="borrowModal" tabindex="-1">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header"><h5 class="modal-title"><i class="bi bi-box-arrow-up-right text-primary"></i> Borrow Consumable</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+			<form method="POST" id="borrowForm">
+				<div class="modal-body">
+					<div class="mb-3"><label class="form-label">Consumable</label><input id="borrowItemName" class="form-control" disabled></div>
+					<div class="mb-3"><label class="form-label">Borrower Name</label><input name="borrower_name" id="borrowerName" class="form-control" required autocomplete="off"></div>
+					<div class="mb-3"><label class="form-label">Borrower Type</label><select name="borrower_type" class="form-select" required><option value="Student">Student</option><option value="Staff">Staff</option></select></div>
+					<div class="mb-3"><label class="form-label">Contact Info</label><input name="contact_info" class="form-control"></div>
+					<div class="mb-3"><label class="form-label">Department</label><input name="department" class="form-control"></div>
+					<div class="mb-3"><label class="form-label">Quantity Borrowed</label><input name="quantity" type="number" min="1" class="form-control" required></div>
+				</div>
+				<div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">Save</button></div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header"><h5 class="modal-title"><i class="bi bi-eye text-primary"></i> Consumable Details</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+			<div class="modal-body">
+				<pre id="detailsPre" class="mb-0"></pre>
+			</div>
+			<div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button></div>
+		</div>
+	</div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+	document.addEventListener('click', function(e){
+		const btn = e.target.closest('[data-bs-target="#updateConsumableModal"]');
+		if(btn){
+			const data = JSON.parse(btn.dataset.item);
+			document.getElementById('updName').value = data.name || '';
+			document.getElementById('updQty').value = data.quantity || 0;
+			document.getElementById('updCat').value = data.category || '';
+			document.getElementById('updReturnable').checked = !!data.returnable;
+			document.getElementById('updateConsumableForm').action = `{{ url_for('admin_consumables_update', cid=0) }}`.replace('0', data.id);
+		}
+		const bbtn = e.target.closest('[data-bs-target="#borrowModal"]');
+		if(bbtn){
+			const data = JSON.parse(bbtn.dataset.item);
+			document.getElementById('borrowItemName').value = data.name || '';
+			document.getElementById('borrowForm').action = `{{ url_for('admin_consumables_borrow', cid=0) }}`.replace('0', data.id);
+		}
+		const dbtn = e.target.closest('[data-bs-target="#detailsModal"]');
+		if(dbtn){
+			const data = JSON.parse(dbtn.dataset.item);
+			document.getElementById('detailsPre').textContent = JSON.stringify(data, null, 2);
+		}
+	});
+
+	// Borrower auto-suggestion
+	const borrowerNameInput = document.getElementById('borrowerName');
+	if (borrowerNameInput) {
+		borrowerNameInput.addEventListener('input', async function(){
+			const q = this.value.trim();
+			if(!q){ return; }
+			try{
+				const res = await fetch(`{{ url_for('admin_borrower_suggest') }}?q=${encodeURIComponent(q)}`);
+				const names = await res.json();
+				this.setAttribute('list', 'borrowerSuggestions');
+				let dl = document.getElementById('borrowerSuggestions');
+				if(!dl){ dl = document.createElement('datalist'); dl.id='borrowerSuggestions'; document.body.appendChild(dl); }
+				dl.innerHTML = names.map(n => `<option value="${n}"></option>`).join('');
+			}catch(e){}
+		});
+	}
+</script>
+{% endblock %}
+
+

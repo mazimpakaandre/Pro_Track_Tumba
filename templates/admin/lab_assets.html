@@ -4,309 +4,490 @@
 
 {% block content %}
 <div class="container-fluid">
-    <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-3 col-lg-2 d-md-block sidebar collapse">
-            <div class="position-sticky pt-3">
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
-                            <i class="bi bi-speedometer2"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin_inventory') }}">
-                            <i class="bi bi-boxes"></i> Inventory
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin_orders') }}">
-                            <i class="bi bi-list-check"></i> Orders
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
+	<div class="row">
+		<!-- Sidebar -->
+		<div class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+			<div class="position-sticky pt-3">
+				<ul class="nav flex-column">
+					<li class="nav-item">
+						<a class="nav-link" href="{{ url_for('admin_dashboard') }}">
+							<i class="bi bi-speedometer2"></i> Dashboard
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="{{ url_for('admin_inventory') }}">
+							<i class="bi bi-boxes"></i> Inventory
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="{{ url_for('admin_orders') }}">
+							<i class="bi bi-list-check"></i> Orders
+						</a>
+					</li>
+				</ul>
+			</div>
+		</div>
 
-        <!-- Main Content -->
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
-            <!-- Header -->
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <div>
-                    <div class="d-flex align-items-center">
-                        <a href="{{ url_for('admin_inventory') }}" class="btn btn-outline-secondary me-3">
-                            <i class="bi bi-arrow-left"></i> Back to Labs
-                        </a>
-                        <div>
-                            <h1 class="h2 mb-1">
-                                <i class="bi bi-building text-primary"></i> 
-                                {{ lab.name }}
-                            </h1>
-                            <p class="text-muted mb-0">
-                                Status: 
-                                {% if lab.status == 'Active' %}
-                                    <span class="badge bg-success">Active</span>
-                                {% elif lab.status == 'Inactive' %}
-                                    <span class="badge bg-danger">Inactive</span>
-                                {% else %}
-                                    <span class="badge bg-warning">Maintenance</span>
-                                {% endif %}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div class="btn-toolbar mb-2 mb-md-0">
-                    <div class="btn-group me-2">
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAssetModal">
-                            <i class="bi bi-plus-circle"></i> + Add Asset
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editLabModal">
-                            <i class="bi bi-pencil"></i> Edit Lab
-                        </button>
-                        {% if assets|length == 0 %}
-                        <form method="POST" action="{{ url_for('admin_delete_lab', lab_id=lab.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete the lab \"{{ lab.name }}\"? This action cannot be undone.');">
-                            <button type="submit" class="btn btn-outline-danger">
-                                <i class="bi bi-trash"></i> Delete Lab
-                            </button>
-                        </form>
-                        {% else %}
-                        <button type="button" class="btn btn-outline-danger" disabled data-bs-toggle="tooltip" title="Cannot delete a lab that has assets">
-                            <i class="bi bi-trash"></i> Delete Lab
-                        </button>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
+		<!-- Main Content -->
+		<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+			<!-- Header -->
+			<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+				<div>
+					<div class="d-flex align-items-center">
+						<a href="{{ url_for('admin_inventory') }}" class="btn btn-outline-secondary me-3">
+							<i class="bi bi-arrow-left"></i> Back to Labs
+						</a>
+						<div>
+							<h1 class="h2 mb-1">
+								<i class="bi bi-building text-primary"></i> 
+								{{ lab.name }}
+							</h1>
+							<p class="text-muted mb-0">
+								Status: 
+								{% if lab.status == 'Active' %}
+									<span class="badge bg-success">Active</span>
+								{% elif lab.status == 'Inactive' %}
+									<span class="badge bg-danger">Inactive</span>
+								{% else %}
+									<span class="badge bg-warning">Maintenance</span>
+								{% endif %}
+							</p>
+						</div>
+					</div>
+				</div>
+				<div class="btn-toolbar mb-2 mb-md-0">
+					<div class="btn-group me-2">
+						<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAssetModal">
+							<i class="bi bi-plus-circle"></i> + Add Asset
+						</button>
+						<button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editLabModal">
+							<i class="bi bi-pencil"></i> Edit Lab
+						</button>
+						{% if assets|length == 0 %}
+						<form method="POST" action="{{ url_for('admin_delete_lab', lab_id=lab.id) }}" class="d-inline" onsubmit="return confirmDeleteLab('{{ lab.name|e }}')">
+							<button type="submit" class="btn btn-outline-danger">
+								<i class="bi bi-trash"></i> Delete Lab
+							</button>
+						</form>
+						{% else %}
+						<button type="button" class="btn btn-outline-danger" disabled data-bs-toggle="tooltip" title="Cannot delete a lab that has assets">
+							<i class="bi bi-trash"></i> Delete Lab
+						</button>
+						{% endif %}
+					</div>
+				</div>
+			</div>
 
-            <!-- Search and Filter Controls -->
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <form method="GET" action="{{ url_for('admin_lab_assets', lab_id=lab.id) }}" class="d-flex">
-                        <input type="text" class="form-control me-2" name="search" placeholder="Search assets..." value="{{ search }}">
-                        <button type="submit" class="btn btn-outline-secondary">
-                            <i class="bi bi-search"></i>
-                        </button>
-                        {% if search %}
-                            <a href="{{ url_for('admin_lab_assets', lab_id=lab.id) }}" class="btn btn-outline-danger ms-2">
-                                <i class="bi bi-x-circle"></i> Clear
-                            </a>
-                        {% endif %}
-                    </form>
-                </div>
-                <div class="col-md-6">
-                    <div class="d-flex justify-content-end">
-                        <select class="form-select me-2" name="category_filter" style="max-width: 200px;" onchange="this.form.submit()">
-                            <option value="">All Categories</option>
-                            <option value="Computer Equipment" {% if category_filter == 'Computer Equipment' %}selected{% endif %}>Computer Equipment</option>
-                            <option value="Lab Equipment" {% if category_filter == 'Lab Equipment' %}selected{% endif %}>Lab Equipment</option>
-                            <option value="Furniture" {% if category_filter == 'Furniture' %}selected{% endif %}>Furniture</option>
-                            <option value="Electronics" {% if category_filter == 'Electronics' %}selected{% endif %}>Electronics</option>
-                            <option value="Tools" {% if category_filter == 'Tools' %}selected{% endif %}>Tools</option>
-                        </select>
-                        <select class="form-select" name="status_filter" style="max-width: 150px;" onchange="this.form.submit()">
-                            <option value="">All Status</option>
-                            <option value="Available" {% if status_filter == 'Available' %}selected{% endif %}>Available</option>
-                            <option value="In Use" {% if status_filter == 'In Use' %}selected{% endif %}>In Use</option>
-                            <option value="Maintenance" {% if status_filter == 'Maintenance' %}selected{% endif %}>Maintenance</option>
-                            <option value="Retired" {% if status_filter == 'Retired' %}selected{% endif %}>Retired</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+			<!-- Search and Filter Controls -->
+			<div class="row mb-4">
+				<div class="col-md-6">
+					<form method="GET" action="{{ url_for('admin_lab_assets', lab_id=lab.id) }}" class="d-flex">
+						<input type="text" class="form-control me-2" name="search" placeholder="Search by Name or Asset Code" value="{{ search }}">
+						<button type="submit" class="btn btn-outline-secondary">
+							<i class="bi bi-search"></i>
+						</button>
+						{% if search %}
+							<a href="{{ url_for('admin_lab_assets', lab_id=lab.id) }}" class="btn btn-outline-danger ms-2">
+								<i class="bi bi-x-circle"></i> Clear
+							</a>
+						{% endif %}
+					</form>
+				</div>
+				<div class="col-md-6">
+					<form method="GET" action="{{ url_for('admin_lab_assets', lab_id=lab.id) }}" class="d-flex justify-content-end">
+						<select class="form-select me-2" name="category_filter" style="max-width: 200px;" onchange="this.form.submit()">
+							<option value="">All Categories</option>
+							{% for c in categories %}
+								<option value="{{ c }}" {% if category_filter == c %}selected{% endif %}>{{ c }}</option>
+							{% endfor %}
+						</select>
+						<select class="form-select" name="status_filter" style="max-width: 150px;" onchange="this.form.submit()">
+							<option value="">All Status</option>
+							<option value="Available" {% if status_filter == 'Available' %}selected{% endif %}>Available</option>
+							<option value="In Use" {% if status_filter == 'In Use' %}selected{% endif %}>In Use</option>
+							<option value="Maintenance" {% if status_filter == 'Maintenance' %}selected{% endif %}>Maintenance</option>
+							<option value="Retired" {% if status_filter == 'Retired' %}selected{% endif %}>Retired</option>
+							<option value="Damaged" {% if status_filter == 'Damaged' %}selected{% endif %}>Damaged</option>
+						</select>
+					</form>
+				</div>
+			</div>
 
-            <!-- Assets Table -->
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="bi bi-box-seam"></i> Laboratory Assets
-                        <span class="badge bg-secondary ms-2">{{ assets|length }} items</span>
-                    </h6>
-                </div>
-                <div class="card-body">
-                    {% if assets %}
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-hover">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Asset ID</th>
-                                        <th>Name</th>
-                                        <th>Category</th>
-                                        <th>Status</th>
-                                        <th>Purchase Date</th>
-                                        <th>Last Updated</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for asset in assets %}
-                                        <tr>
-                                            <td><strong>#{{ asset.id }}</strong></td>
-                                            <td>{{ asset.name }}</td>
-                                            <td>
-                                                <span class="badge bg-info">{{ asset.category }}</span>
-                                            </td>
-                                            <td>
-                                                {% if asset.status == 'Available' %}
-                                                    <span class="badge bg-success">Available</span>
-                                                {% elif asset.status == 'In Use' %}
-                                                    <span class="badge bg-primary">In Use</span>
-                                                {% elif asset.status == 'Maintenance' %}
-                                                    <span class="badge bg-warning">Maintenance</span>
-                                                {% else %}
-                                                    <span class="badge bg-danger">Retired</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>{{ asset.purchase_date.strftime('%Y-%m-%d') if asset.purchase_date else 'N/A' }}</td>
-                                            <td>{{ asset.updated_at.strftime('%Y-%m-%d %H:%M') if asset.updated_at else 'N/A' }}</td>
-                                            <td>
-                                                <div class="btn-group" role="group">
-                                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="editAsset({{ asset.id }})">
-                                                        <i class="bi bi-pencil"></i>
-                                                    </button>
-                                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteAsset({{ asset.id }}, '{{ asset.name }}')">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <div class="text-center py-5">
-                            <i class="bi bi-box-seam text-muted" style="font-size: 4rem;"></i>
-                            <h4 class="mt-3 text-muted">No Assets Found</h4>
-                            <p class="text-muted">This laboratory doesn't have any assets yet.</p>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAssetModal">
-                                <i class="bi bi-plus-circle"></i> Add Your First Asset
-                            </button>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </main>
-    </div>
+			<!-- Assets Table -->
+			<div class="card shadow">
+				<div class="card-header py-3 d-flex justify-content-between align-items-center">
+					<h6 class="m-0 font-weight-bold text-primary">
+						<i class="bi bi-box-seam"></i> Laboratory Assets
+						<span class="badge bg-secondary ms-2">{{ assets|length }} items</span>
+					</h6>
+					<div class="d-flex align-items-center gap-2">
+						<a class="btn btn-sm btn-success" href="{{ url_for('admin_export_assets_excel', lab_id=lab.id, search=search, category_filter=category_filter, status_filter=status_filter) }}">
+							<i class="bi bi-file-earmark-excel"></i> Export Excel
+						</a>
+						<a class="btn btn-sm btn-danger" href="{{ url_for('admin_export_assets_pdf', lab_id=lab.id, search=search, category_filter=category_filter, status_filter=status_filter) }}">
+							<i class="bi bi-file-earmark-pdf"></i> Export PDF
+						</a>
+						<button type="button" class="btn btn-sm btn-outline-primary" onclick="promptAddCategory()">
+							<i class="bi bi-plus-circle"></i> Add Category
+						</button>
+					</div>
+				</div>
+				<div class="card-body">
+					<div class="mb-3">
+						<form class="row g-2 align-items-center" method="POST" action="{{ url_for('admin_import_assets', lab_id=lab.id) }}" enctype="multipart/form-data">
+							<div class="col-sm-8 col-md-6 col-lg-5">
+								<input class="form-control" type="file" name="file" accept=".xlsx" required>
+							</div>
+							<div class="col-auto">
+								<button type="submit" class="btn btn-outline-primary">
+									<i class="bi bi-upload"></i> Import Excel
+								</button>
+							</div>
+							<div class="col-auto">
+								<a class="btn btn-outline-secondary" href="{{ url_for('admin_assets_template', lab_id=lab.id) }}">
+									<i class="bi bi-download"></i> Download Template
+								</a>
+							</div>
+							<div class="col-auto ms-auto">
+								<!-- Export buttons removed as requested -->
+							</div>
+						</form>
+						<small class="text-muted d-block mt-1">Columns: Asset Name, Asset Code, Category, Status, Stock Date, Description (.xlsx)</small>
+					</div>
+					{% if assets %}
+						<div class="table-responsive">
+							<table class="table table-bordered table-hover">
+								<thead class="table-light">
+									<tr>
+										<th>#</th>
+										<th>Asset Code</th>
+										<th>
+											<a class="text-decoration-none" href="{{ url_for('admin_lab_assets', lab_id=lab.id, search=search, category_filter=category_filter, status_filter=status_filter, page=page, per_page=per_page, sort_by='name', sort_order='asc' if sort_by!='name' or sort_order=='desc' else 'desc') }}">
+												Name {% if sort_by=='name' %}<i class="bi bi-caret-{{ 'up' if sort_order=='asc' else 'down' }}-fill"></i>{% endif %}
+											</a>
+										</th>
+										<th>
+											<a class="text-decoration-none" href="{{ url_for('admin_lab_assets', lab_id=lab.id, search=search, category_filter=category_filter, status_filter=status_filter, page=page, per_page=per_page, sort_by='category', sort_order='asc' if sort_by!='category' or sort_order=='desc' else 'desc') }}">
+												Category {% if sort_by=='category' %}<i class="bi bi-caret-{{ 'up' if sort_order=='asc' else 'down' }}-fill"></i>{% endif %}
+											</a>
+										</th>
+										<th>
+											<a class="text-decoration-none" href="{{ url_for('admin_lab_assets', lab_id=lab.id, search=search, category_filter=category_filter, status_filter=status_filter, page=page, per_page=per_page, sort_by='status', sort_order='asc' if sort_by!='status' or sort_order=='desc' else 'desc') }}">
+												Status {% if sort_by=='status' %}<i class="bi bi-caret-{{ 'up' if sort_order=='asc' else 'down' }}-fill"></i>{% endif %}
+											</a>
+										</th>
+										<th>
+											<a class="text-decoration-none" href="{{ url_for('admin_lab_assets', lab_id=lab.id, search=search, category_filter=category_filter, status_filter=status_filter, page=page, per_page=per_page, sort_by='stock_date', sort_order='asc' if sort_by!='stock_date' or sort_order=='desc' else 'desc') }}">
+												Stock Date {% if sort_by=='stock_date' %}<i class="bi bi-caret-{{ 'up' if sort_order=='asc' else 'down' }}-fill"></i>{% endif %}
+											</a>
+										</th>
+										<th>
+											<a class="text-decoration-none" href="{{ url_for('admin_lab_assets', lab_id=lab.id, search=search, category_filter=category_filter, status_filter=status_filter, page=page, per_page=per_page, sort_by='updated_at', sort_order='asc' if sort_by!='updated_at' or sort_order=='desc' else 'desc') }}">
+												Last Updated {% if sort_by=='updated_at' %}<i class="bi bi-caret-{{ 'up' if sort_order=='asc' else 'down' }}-fill"></i>{% endif %}
+											</a>
+										</th>
+										<th>Actions</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for asset in assets %}
+										<tr>
+											<td><strong>{{ (page - 1) * per_page + loop.index }}</strong></td>
+											<td>{{ asset.asset_code or '—' }}</td>
+											<td>{{ asset.name }}</td>
+											<td>
+												<span class="badge bg-info">{{ asset.category }}</span>
+											</td>
+											<td>
+												{% if asset.status == 'Available' %}
+													<span class="badge bg-success">Available</span>
+												{% elif asset.status == 'In Use' %}
+													<span class="badge bg-primary">In Use</span>
+												{% elif asset.status == 'Maintenance' %}
+													<span class="badge bg-warning">Maintenance</span>
+												{% elif asset.status == 'Damaged' %}
+													<span class="badge bg-danger">Damaged</span>
+												{% else %}
+													<span class="badge bg-danger">Retired</span>
+												{% endif %}
+											</td>
+											<td>{{ asset.stock_date.strftime('%Y-%m-%d') if asset.stock_date else 'N/A' }}</td>
+											<td>{{ asset.updated_at.strftime('%Y-%m-%d %H:%M') if asset.updated_at else 'N/A' }}</td>
+											<td>
+												<div class="btn-group" role="group">
+													<button type="button" class="btn btn-sm btn-outline-primary btn-edit-asset" data-asset='{{ {"id": asset.id, "name": asset.name, "asset_code": asset.asset_code, "category": asset.category, "status": asset.status, "stock_date": asset.stock_date.strftime('%Y-%m-%d') if asset.stock_date else '', "description": asset.description} | tojson | e }}'>
+														<i class="bi bi-pencil"></i>
+													</button>
+													<form method="POST" action="{{ url_for('admin_delete_asset', lab_id=lab.id, asset_id=asset.id) }}" class="d-inline" onsubmit="return confirmDeleteAsset('{{ asset.name|e }}')">
+														<button type="submit" class="btn btn-sm btn-outline-danger">
+															<i class="bi bi-trash"></i>
+														</button>
+													</form>
+												</div>
+											</td>
+										</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+						</div>
+						<nav aria-label="Assets pagination" class="mt-3">
+							<ul class="pagination justify-content-center">
+								<li class="page-item {% if page <= 1 %}disabled{% endif %}">
+									<a class="page-link" href="{{ url_for('admin_lab_assets', lab_id=lab.id, search=search, category_filter=category_filter, status_filter=status_filter, sort_by=sort_by, sort_order=sort_order, per_page=per_page, page=page-1) }}">Previous</a>
+								</li>
+								{% for p in range(1, total_pages + 1) %}
+									<li class="page-item {% if p == page %}active{% endif %}">
+										<a class="page-link" href="{{ url_for('admin_lab_assets', lab_id=lab.id, search=search, category_filter=category_filter, status_filter=status_filter, sort_by=sort_by, sort_order=sort_order, per_page=per_page, page=p) }}">{{ p }}</a>
+									</li>
+								{% endfor %}
+								<li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+									<a class="page-link" href="{{ url_for('admin_lab_assets', lab_id=lab.id, search=search, category_filter=category_filter, status_filter=status_filter, sort_by=sort_by, sort_order=sort_order, per_page=per_page, page=page+1) }}">Next</a>
+								</li>
+							</ul>
+						</nav>
+					{% else %}
+						<div class="text-center py-5">
+							<i class="bi bi-box-seam text-muted" style="font-size: 4rem;"></i>
+							<h4 class="mt-3 text-muted">No Assets Found</h4>
+							<p class="text-muted">This laboratory doesn't have any assets yet.</p>
+							<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAssetModal">
+								<i class="bi bi-plus-circle"></i> Add Your First Asset
+							</button>
+						</div>
+					{% endif %}
+				</div>
+			</div>
+		</main>
+	</div>
 </div>
 
 <!-- Add Asset Modal -->
 <div class="modal fade" id="addAssetModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="bi bi-plus-circle text-primary"></i> Add New Asset to {{ lab.name }}
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form method="POST" action="{{ url_for('admin_add_asset', lab_id=lab.id) }}">
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="assetName" class="form-label">Asset Name *</label>
-                            <input type="text" class="form-control" id="assetName" name="name" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="assetCategory" class="form-label">Category *</label>
-                            <select class="form-select" id="assetCategory" name="category" required>
-                                <option value="">Select Category</option>
-                                <option value="Computer Equipment">Computer Equipment</option>
-                                <option value="Lab Equipment">Lab Equipment</option>
-                                <option value="Furniture">Furniture</option>
-                                <option value="Electronics">Electronics</option>
-                                <option value="Tools">Tools</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="assetStatus" class="form-label">Status *</label>
-                            <select class="form-select" id="assetStatus" name="status" required>
-                                <option value="Available">Available</option>
-                                <option value="In Use">In Use</option>
-                                <option value="Maintenance">Maintenance</option>
-                                <option value="Retired">Retired</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="assetPurchaseDate" class="form-label">Purchase Date</label>
-                            <input type="date" class="form-control" id="assetPurchaseDate" name="purchase_date">
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="assetDescription" class="form-label">Description</label>
-                        <textarea class="form-control" id="assetDescription" name="description" rows="3" placeholder="Brief description of the asset..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Add Asset
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">
+					<i class="bi bi-plus-circle text-primary"></i> Add New Asset to {{ lab.name }}
+				</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+			</div>
+			<form method="POST" action="{{ url_for('admin_add_asset', lab_id=lab.id) }}">
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-6 mb-3">
+							<label for="assetName" class="form-label">Asset Name *</label>
+							<input type="text" class="form-control" id="assetName" name="name" required>
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="assetCode" class="form-label">Asset Code</label>
+							<input type="text" class="form-control" id="assetCode" name="asset_code" placeholder="Optional unique code (e.g:IPRC-T/LIB/CU373)">
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-6 mb-3">
+							<label for="assetCategory" class="form-label">Category *</label>
+							<select class="form-select" id="assetCategory" name="category" required>
+								<option value="">Select Category</option>
+								{% for c in categories %}
+									<option value="{{ c }}">{{ c }}</option>
+								{% endfor %}
+							</select>
+							<div class="mt-2">
+								<button type="button" class="btn btn-sm btn-outline-primary" onclick="promptAddCategory(true)">
+									<i class="bi bi-plus-circle"></i> Add Category
+								</button>
+							</div>
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="assetStatus" class="form-label">Status *</label>
+							<select class="form-select" id="assetStatus" name="status" required>
+								<option value="Available">Available</option>
+								<option value="In Use">In Use</option>
+								<option value="Maintenance">Maintenance</option>
+								<option value="Retired">Retired</option>
+								<option value="Damaged">Damaged</option>
+							</select>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-6 mb-3">
+							<label for="assetStockDate" class="form-label">Stock Date</label>
+							<input type="date" class="form-control" id="assetStockDate" name="purchase_date">
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="assetDescription" class="form-label">Description</label>
+							<textarea class="form-control" id="assetDescription" name="description" rows="3" placeholder="Brief description of the asset..."></textarea>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+					<button type="submit" class="btn btn-primary">
+						<i class="bi bi-plus-circle"></i> Add Asset
+						</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- Edit Asset Modal -->
+<div class="modal fade" id="editAssetModal" tabindex="-1">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">
+					<i class="bi bi-pencil-square text-primary"></i> Edit Asset
+				</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+			</div>
+			<form id="editAssetForm" method="POST">
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-6 mb-3">
+							<label for="editAssetName" class="form-label">Asset Name *</label>
+							<input type="text" class="form-control" id="editAssetName" name="name" required>
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="editAssetCode" class="form-label">Asset Code</label>
+							<input type="text" class="form-control" id="editAssetCode" name="asset_code">
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-6 mb-3">
+							<label for="editAssetCategory" class="form-label">Category *</label>
+							<select class="form-select" id="editAssetCategory" name="category" required>
+								{% for c in categories %}
+									<option value="{{ c }}">{{ c }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="editAssetStatus" class="form-label">Status *</label>
+							<select class="form-select" id="editAssetStatus" name="status" required>
+								<option value="Available">Available</option>
+								<option value="In Use">In Use</option>
+								<option value="Maintenance">Maintenance</option>
+								<option value="Retired">Retired</option>
+								<option value="Damaged">Damaged</option>
+							</select>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-6 mb-3">
+							<label for="editAssetStockDate" class="form-label">Stock Date</label>
+							<input type="date" class="form-control" id="editAssetStockDate" name="stock_date">
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="editAssetDescription" class="form-label">Description</label>
+							<textarea class="form-control" id="editAssetDescription" name="description" rows="3"></textarea>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+					<button type="submit" class="btn btn-primary">
+						<i class="bi bi-check-circle"></i> Update Asset
+						</button>
+				</div>
+			</form>
+		</div>
+	</div>
 </div>
 
 <!-- Edit Lab Modal -->
 <div class="modal fade" id="editLabModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="bi bi-pencil text-primary"></i> Edit Laboratory
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form method="POST" action="{{ url_for('admin_edit_lab', lab_id=lab.id) }}">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="editLabName" class="form-label">Lab Name *</label>
-                        <input type="text" class="form-control" id="editLabName" name="name" value="{{ lab.name }}" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="editLabStatus" class="form-label">Status *</label>
-                        <select class="form-select" id="editLabStatus" name="status" required>
-                            <option value="Active" {% if lab.status == 'Active' %}selected{% endif %}>Active</option>
-                            <option value="Inactive" {% if lab.status == 'Inactive' %}selected{% endif %}>Inactive</option>
-                            <option value="Maintenance" {% if lab.status == 'Maintenance' %}selected{% endif %}>Maintenance</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle"></i> Update Laboratory
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">
+					<i class="bi bi-pencil text-primary"></i> Edit Laboratory
+				</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+			</div>
+			<form method="POST" action="{{ url_for('admin_edit_lab', lab_id=lab.id) }}">
+				<div class="modal-body">
+					<div class="mb-3">
+						<label for="editLabName" class="form-label">Lab Name *</label>
+						<input type="text" class="form-control" id="editLabName" name="name" value="{{ lab.name }}" required>
+					</div>
+					<div class="mb-3">
+						<label for="editLabStatus" class="form-label">Status *</label>
+						<select class="form-select" id="editLabStatus" name="status" required>
+							<option value="Active" {% if lab.status == 'Active' %}selected{% endif %}>Active</option>
+							<option value="Inactive" {% if lab.status == 'Inactive' %}selected{% endif %}>Inactive</option>
+							<option value="Maintenance" {% if lab.status == 'Maintenance' %}selected{% endif %}>Maintenance</option>
+						</select>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+					<button type="submit" class="btn btn-primary">
+						<i class="bi bi-check-circle"></i> Update Laboratory
+						</button>
+				</div>
+			</form>
+		</div>
+	</div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // Edit asset function
-    function editAsset(assetId) {
-        // This would typically open an edit modal or redirect to edit page
-        console.log('Editing asset:', assetId);
-        // You can implement the actual edit functionality here
-    }
-    
-    // Delete asset function
-    function deleteAsset(assetId, assetName) {
-        if (confirm(`Are you sure you want to delete the asset "${assetName}"? This action cannot be undone.`)) {
-            // This would typically send a DELETE request to the server
-            console.log('Deleting asset:', assetId);
-            // You can implement the actual deletion logic here
-        }
-    }
-    
-    // Auto-focus on first input when modal opens
-    document.getElementById('addAssetModal').addEventListener('shown.bs.modal', function() {
-        document.getElementById('assetName').focus();
-    });
+	function confirmDeleteLab(name) {
+		return confirm(`Are you sure you want to delete the lab "${name}"? This action cannot be undone.`);
+	}
+	function confirmDeleteAsset(name) {
+		return confirm(`Are you sure you want to delete the asset "${name}"? This action cannot be undone.`);
+	}
+
+	document.addEventListener('click', function(e) {
+		const editBtn = e.target.closest('.btn-edit-asset');
+		if (editBtn) {
+			const data = JSON.parse(editBtn.dataset.asset);
+			const form = document.getElementById('editAssetForm');
+			form.action = `{{ url_for('admin_edit_asset', lab_id=lab.id, asset_id=0) }}`.replace('0', data.id);
+			document.getElementById('editAssetName').value = data.name || '';
+			document.getElementById('editAssetCode').value = data.asset_code || '';
+			document.getElementById('editAssetCategory').value = data.category || '';
+			document.getElementById('editAssetStatus').value = data.status || 'Available';
+			document.getElementById('editAssetStockDate').value = data.stock_date || '';
+			document.getElementById('editAssetDescription').value = data.description || '';
+			const modal = new bootstrap.Modal(document.getElementById('editAssetModal'));
+			modal.show();
+		}
+	});
+
+	function promptAddCategory(refreshSelect = false) {
+		const name = prompt('Enter new category name:');
+		if (!name) { return; }
+		const form = document.createElement('form');
+		form.method = 'POST';
+		form.action = "{{ url_for('admin_add_category') }}";
+
+		const input = document.createElement('input');
+		input.type = 'hidden';
+		input.name = 'name';
+		input.value = name.trim();
+		form.appendChild(input);
+
+		// CSRF token if present in base.html
+		const csrf = document.querySelector('input[name=\"csrf_token\"]');
+		if (csrf) {
+			const csrfInput = document.createElement('input');
+			csrfInput.type = 'hidden';
+			csrfInput.name = 'csrf_token';
+			csrfInput.value = csrf.value;
+			form.appendChild(csrfInput);
+		}
+
+		document.body.appendChild(form);
+		form.submit();
+	}
+
+	// Auto-focus on first input when modal opens
+	document.getElementById('addAssetModal').addEventListener('shown.bs.modal', function() {
+		document.getElementById('assetName').focus();
+	});
 </script>
 {% endblock %}
